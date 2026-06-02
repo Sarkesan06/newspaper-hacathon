@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Translator with Voice Control</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <i class="fas fa-file-alt"></i>
+                OCR Translator with Voice Control
+                <i class="fas fa-microphone-alt"></i>
+            </h1>
+            <p>Upload an image and extract text using OCR. Voice control available for language selection!</p>
+        </header>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Drag & drop or click to upload images (multiple pages)</p>
+                <input type="file" id="imageInput" accept="image/jpeg,image/png,image/jpg" multiple style="display: none;">
+                <button class="upload-btn" onclick="document.getElementById('imageInput').click()">
+                    <i class="fas fa-upload"></i> Choose Images
+                </button>
+            </div>
+            
+            <!-- Uploaded Files List -->
+            <div id="uploadedFilesList" class="uploaded-files-section" style="display: none;">
+                <h3><i class="fas fa-images"></i> Uploaded Pages</h3>
+                <div id="filesContainer" class="files-container"></div>
+                <div class="upload-controls">
+                    <button class="clear-all-btn" onclick="clearAllImages()">
+                        <i class="fas fa-trash"></i> Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h2><i class="fas fa-language"></i> Language Settings</h2>
+            
+            <div class="languages-container">
+                <div class="language-card">
+                    <h3>OCR Language (Source)</h3>
+                    <div class="searchable-select-wrapper">
+                        <input type="text" id="ocrLangSearch" class="search-input" placeholder="🔍 Type to search (e.g., E for English)">
+                        <div class="select-wrapper">
+                            <select id="ocrLangSelect">
+                                {% for lang in ocr_languages %}
+                                <option value="{{ lang }}" {% if loop.first %}selected{% endif %}>
+                                    {{ lang }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <ul id="ocrLangDropdown" class="filtered-dropdown" style="display: none;"></ul>
+                    </div>
+                    <button class="voice-btn" onclick="startVoiceRecognition('ocr', event)">
+                        <i class="fas fa-microphone"></i> Speak OCR Language
+                    </button>
+                    <div id="ocrVoiceStatus" class="voice-status"></div>
+                    <div class="voice-hint">If speech fails, select the language from the dropdown.</div>
+                </div>
+
+                <div class="language-card">
+                    <h3>Output Language</h3>
+                    <div class="searchable-select-wrapper">
+                        <input type="text" id="outputLangSearch" class="search-input" placeholder="🔍 Type to search (e.g., E for English)">
+                        <div class="select-wrapper">
+                            <select id="outputLangSelect">
+                                {% for lang in output_languages %}
+                                <option value="{{ lang }}" {% if loop.first %}selected{% endif %}>
+                                    {{ lang }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <ul id="outputLangDropdown" class="filtered-dropdown" style="display: none;"></ul>
+                    </div>
+                    <button class="voice-btn" onclick="startVoiceRecognition('output', event)">
+                        <i class="fas fa-microphone"></i> Speak Output Language
+                    </button>
+                    <div id="outputVoiceStatus" class="voice-status"></div>
+                    <div class="voice-hint">If speech fails, select the language from the dropdown.</div>
+                </div>
+            </div>
+
+            <div class="options">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="generateAudio" checked>
+                    <span>Generate Audio Output</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="showSummary" checked>
+                    <span>Show Summary</span>
+                </label>
+            </div>
+
+            <button class="process-btn" id="processBtn" onclick="processMultipleImages()">
+                <i class="fas fa-magic"></i> Process All Pages
+            </button>
+
+            <div class="progress-wrapper" id="progressWrapper" style="display:none;">
+                <div class="progress-track">
+                    <div id="progressBar" class="progress-fill" style="width: 0%;"></div>
+                </div>
+                <div id="progressLabel" class="progress-label">Waiting to start...</div>
+            </div>
+        </div>
+
+        <div id="results" class="results-section" style="display: none;">
+            <div class="results-header">
+                <div>
+                    <h2><i class="fas fa-chart-line"></i> Processing Results</h2>
+                    <p class="results-info">Review OCR text, edit before translation, and export all pages.</p>
+                </div>
+                <div class="results-actions">
+                    <button class="export-btn" onclick="exportResultsPDF()">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                    <button class="export-btn" onclick="exportResultsZip()">
+                        <i class="fas fa-file-archive"></i> Download ZIP
+                    </button>
+                </div>
+            </div>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
