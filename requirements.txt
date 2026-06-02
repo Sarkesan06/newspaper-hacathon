@@ -6,4 +6,4 @@ gTTS==2.3.2
 deep-translator==1.11.4
 SpeechRecognition==3.10.0
 Werkzeug==2.3.7
-gunicorn==22.1.0
+gunicorn==22.0.0
