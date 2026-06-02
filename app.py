@@ -6,7 +6,12 @@ from gtts import gTTS
 from deep_translator import GoogleTranslator
 import os
 import tempfile
-import speech_recognition as sr
+# speech_recognition can fail to import in some minimal Python builds (missing aifc)
+# Import lazily and handle absence so the app can start under Gunicorn.
+try:
+    import speech_recognition as sr
+except Exception:
+    sr = None
 import base64
 from uuid import uuid4
 from werkzeug.utils import secure_filename
@@ -247,6 +252,14 @@ def index():
 @app.route('/recognize_speech', methods=['POST'])
 def recognize_speech():
     """Handle speech recognition from browser audio"""
+    # Ensure speech_recognition is available when this route is called.
+    if sr is None:
+        try:
+            import speech_recognition as sr_local
+            globals()['sr'] = sr_local
+        except Exception as e:
+            return jsonify({'success': False, 'error': f'speech_recognition not available on this server: {e}'})
+
     try:
         audio_data = request.files['audio']
         language_type = request.form.get('type', 'ocr')
