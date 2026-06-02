@@ -10,6 +10,8 @@ import speech_recognition as sr
 import base64
 from uuid import uuid4
 from werkzeug.utils import secure_filename
+import logging
+import sys
 
 app = Flask(__name__)
 CORS(app)
@@ -23,6 +25,15 @@ os.makedirs(app.config['DOWNLOAD_FOLDER'], exist_ok=True)
 os.makedirs('static/css', exist_ok=True)
 os.makedirs('static/js', exist_ok=True)
 os.makedirs('templates', exist_ok=True)
+
+# Configure logging to stdout for Render
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+app.logger.info('Logging configured')
+
+
+@app.route('/health')
+def health():
+    return jsonify({'status': 'ok'}), 200
 
 # Set the path to the Tesseract executable
 if os.name == 'nt':  # Windows
